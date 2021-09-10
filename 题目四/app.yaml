@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xiaoyu-app
+  namespace: xiaoyu-app
+  labels:
+    k8s-app: xiaoyu-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: xiaoyu-app
+  template:
+    metadata:
+      name: xiaoyu-app
+      labels:
+        k8s-app: xiaoyu-app
+    spec:
+      volumes:
+      - name: tmp-dir
+        emptyDir: {}
+      containers:
+      - name: moleculer-blog-www
+        image: moleculer-blog
+        imagePullPolicy: IfNotPresent
+        envs:
+        - name: NODEID
+          value: "node-www"
+        - name: SERVICES
+          value: "www"
+        - name: port
+          value: 4000
+        - name: xiaoyu-env
+          valueFrom:
+            configMapKeyRef:
+              name: xiaoyu-env
+              key: xiaoyu-env  
+        args:
+        - "traefik.enable=true"   
+        - "traefik.backend=www"
+        - "traefik.port=4000"
+        - "traefik.frontend.entryPoints=http"
+        - "traefik.frontend.rule=PathPrefix:/"
+      - name: moleculer-blog-ports
+        image: moleculer-blog
+        imagePullPolicy: IfNotPresent
+        envs:
+        - name: NODEID
+          value: "node-posts"
+        - name: SERVICES
+          value: "posts"
+        - name: xiaoyu-env
+          valueFrom:
+            configMapKeyRef:
+              name: xiaoyu-env
+              key: xiaoyu-env
+      - name: moleculer-blog-users
+        image: moleculer-blog
+        imagePullPolicy: IfNotPresent
+        envs:
+        - name: NODEID
+          value: "node-users"
+        - name: SERVICES
+          value: "users"
+        - name: xiaoyu-env
+          valueFrom:
+            configMapKeyRef:
+              name: xiaoyu-env
+              key: xiaoyu-env
+      - name: moleculer-blog-likes
+        image: moleculer-blog
+        imagePullPolicy: IfNotPresent
+        envs:
+        - name: NODEID
+          value: "node-likes"
+        - name: SERVICES
+          value: "likes"
+        - name: xiaoyu-env
+          valueFrom:
+            configMapKeyRef:
+              name: xiaoyu-env
+              key: xiaoyu-env
+      - name: nats
+        image: nats
+        imagePullPolicy: IfNotPresent
+      - name: redis
+        image: redis:alpine
+        imagePullPolicy: IfNotPresent
+      - name: mongo
+        image: mongo
+        imagePullPolicy: IfNotPresent
+      - name: traefik
+        image: traefik:1.7
+        imagePullPolicy: IfNotPresent
+        args:
+        - "--web --docker --docker.domain=docker.localhost --logLevel=INFO --docker.exposedbydefault=false"
+        ports:
+        - name: http
+          containerPort: 80
+        - name: admin-http
+          containerPort: 8080
+        volumeMounts:
+        - name: traefik-config
+          mountPath: /
+    valumes:
+    - name: traefik-config
+      configMap:
+        name: traefik-config
+        items:
+        - key: traefik-config
+          path: /dev/null

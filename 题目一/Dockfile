@@ -1,0 +1,16 @@
+FROM python:3.7
+MAINTAINER wanglang
+USER root
+ENV TZ=Asia/Shanghai
+ENV LANG=C.UTF-8
+# 基础配置
+RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-free"  > /etc/apt/sources.list \
+    && echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-updates main contrib non-free" >> /etc/apt/sources.list \
+    && echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster-backports main contrib non-free" >> /etc/apt/sources.list \
+    && apt-get -y update \
+    && ln -sf /usr/share/zoneinfo/Asia/ShangHai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && dpkg-reconfigure -f noninteractive tzdata \
+    && apt-get clean
+# 安装ansible
+RUN apt-get  install  ansible-2.10.6
