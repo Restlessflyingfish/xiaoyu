@@ -1,0 +1,11 @@
+stages:
+  - buildimg
+buildimg:
+  stage: buildimg
+  tags:
+    - build
+  script:
+    - docker build -t  registry.cn-hangzhou.aliyuncs.com/wanglang-$CI_COMMIT_SHORT_SHA:v1  .
+    - docker login -u xiaoyu-dev -p YMaFmi8u  registry.cn-hangzhou.aliyuncs.com
+    - docker push  registry.cn-hangzhou.aliyuncs.com/wanglang-$CI_COMMIT_SHORT_SHA:v1
+    - docker image rm registry.cn-hangzhou.aliyuncs.com/wanglang-$CI_COMMIT_SHORT_SHA:v1
